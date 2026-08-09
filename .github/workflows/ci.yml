@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ '**' ]
+  workflow_dispatch: {}
+
+jobs:
+  verify:
+    name: Install, type-check, build, test
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Lowest supported version (package.json engines) and current LTS.
+        node-version: [ '18', '22' ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # No `npm ci`: .npmrc sets package-lock=false, so there is no lockfile
+      # to install from.
+      - name: Install
+        run: npm install
+
+      - name: Type-check
+        run: npm run type-check
+        env:
+          CI: true
+
+      - name: Build (package integrity + API smoke test)
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Test
+        run: npm test
+        env:
+          CI: true
+
+      # Proves the tarball npm would publish actually contains the entry point
+      # and the typings, rather than trusting the "files" list on its own.
+      - name: Verify publishable tarball contents
+        run: |
+          npm pack --dry-run --json > pack.json
+          node -e "
+            const files = require('./pack.json')[0].files.map(f => f.path);
+            const required = ['Int64.js', 'index.d.ts', 'package.json', 'LICENSE', 'README.md'];
+            const missing = required.filter(f => !files.includes(f));
+            if (missing.length) {
+              console.error('ERROR: tarball is missing: ' + missing.join(', '));
+              console.error('Tarball contains: ' + files.join(', '));
+              process.exit(1);
+            }
+            console.log('Tarball contents OK: ' + files.join(', '));
+          "
+
+      - name: Verify package installs and imports from a clean consumer
+        run: |
+          PKG="$(npm pack --silent)"
+          mkdir -p /tmp/consumer && cd /tmp/consumer
+          npm init -y > /dev/null
+          npm install "$GITHUB_WORKSPACE/$PKG"
+          node -e "
+            const Int64 = require('@zklogic/node-int64');
+            const x = new Int64(0x123456789);
+            if (x.toOctetString() !== '0000000123456789') {
+              throw new Error('unexpected value: ' + x.toOctetString());
+            }
+            console.log('Consumer install OK: ' + x.inspect());
+          "

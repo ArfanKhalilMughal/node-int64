@@ -1,27 +1,60 @@
 {
-  "name": "node-int64",
+  "name": "@zklogic/node-int64",
+  "version": "0.5.0",
   "description": "Support for representing 64-bit integers in JavaScript",
-  "url": "http://github.com/broofa/node-int64",
+  "private": false,
+  "license": "MIT",
+  "author": {
+    "name": "Arfan Khalil Mughal",
+    "email": "arfankhalil@hotmail.com",
+    "url": "https://github.com/ArfanKhalilMughal"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArfanKhalilMughal/node-int64.git"
+  },
+  "forkedFrom": {
+    "repository": "https://github.com/broofa/node-int64",
+    "author": "Robert Kieffer",
+    "url": "https://github.com/broofa"
+  },
+  "bugs": {
+    "email": "arfankhalil@hotmail.com",
+    "url": "https://github.com/ArfanKhalilMughal/node-int64/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "lib": ".",
+  "main": "./Int64.js",
+  "types": "./index.d.ts",
+  "files": [
+    "Int64.js",
+    "index.d.ts",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "nodeunit test.js",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "build": "node scripts/verify-package.js",
+    "verify": "npm run type-check && npm run build && npm test",
+    "preversion": "npm run verify",
+    "postversion": "git push --no-verify && git push --tags --no-verify",
+    "prepublishOnly": "node scripts/verify-package.js"
+  },
   "keywords": [
     "math",
     "integer",
     "int64"
   ],
-  "author": "Robert Kieffer <robert@broofa.com>",
-  "contributors": [],
   "dependencies": {},
-  "license": "MIT",
-  "lib": ".",
-  "main": "./Int64.js",
-  "version": "0.4.0",
-  "scripts": {
-    "test": "nodeunit test.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/broofa/node-int64"
-  },
   "devDependencies": {
-    "nodeunit": "^0.9.0"
+    "@types/node": "^22.10.2",
+    "nodeunit": "^0.9.0",
+    "typescript": "^5.7.2"
   }
 }
