@@ -17,13 +17,13 @@ exports.testBufferToString = function(test) {
 
 exports.testBufferCopy = function(test) {
   var src = new Int64(0xfffaffff, 0xfffff700);
-  var dst = new Buffer(8);
+  var dst = Buffer.alloc(8);
 
   src.copy(dst);
 
   test.deepEqual(
     dst,
-    new Buffer([0xff, 0xfa, 0xff, 0xff, 0xff, 0xff, 0xf7, 0x00]),
+    Buffer.from([0xff, 0xfa, 0xff, 0xff, 0xff, 0xff, 0xf7, 0x00]),
     'Copy to buffer'
   );
 
@@ -62,7 +62,7 @@ exports.testValueRepresentation = function(test) {
 };
 
 exports.testBufferOffsets = function(test) {
-  var sourceBuffer = new Buffer(16);
+  var sourceBuffer = Buffer.alloc(16);
   sourceBuffer.writeUInt32BE(0xfffaffff, 2);
   sourceBuffer.writeUInt32BE(0xfffff700, 6);
 
@@ -72,11 +72,31 @@ exports.testBufferOffsets = function(test) {
     'Construct from offset'
   );
 
-  var targetBuffer = new Buffer(16);
+  var targetBuffer = Buffer.alloc(16);
   int.copy(targetBuffer, 4);
   assert.equal(
     targetBuffer.slice(4, 12).toString('hex'), 'fffafffffffff700',
     'Copy to offset'
+  );
+
+  test.done();
+};
+
+exports.testUint8ArrayConstructor = function(test) {
+  var u8 = new Uint8Array([0xff, 0xfa, 0xff, 0xff, 0xff, 0xff, 0xf7, 0x00]);
+  var int = new Int64(u8);
+
+  assert.equal(
+    int.toOctetString(), 'fffafffffffff700',
+    'Construct from Uint8Array'
+  );
+
+  // The constructor must copy, not alias, so mutating the source array
+  // afterwards does not affect the Int64.
+  u8[0] = 0x00;
+  assert.equal(
+    int.toOctetString(), 'fffafffffffff700',
+    'Int64 buffer is independent of source Uint8Array'
   );
 
   test.done();

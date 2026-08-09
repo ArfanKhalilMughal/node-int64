@@ -59,10 +59,10 @@ var Int64 = module.exports = function(a1, a2) {
     // instance of Buffer. We could assume the passed in Uint8Array is actually
     // a buffer but that won't handle the case where a raw Uint8Array is passed
     // in. We construct a new Buffer just in case.
-    this.buffer = new Buffer(a1);
+    this.buffer = Buffer.from(a1);
     this.offset = a2 || 0;
   } else {
-    this.buffer = this.buffer || new Buffer(8);
+    this.buffer = this.buffer || Buffer.alloc(8);
     this.offset = 0;
     this.setValue.apply(this, arguments);
   }
@@ -213,7 +213,7 @@ Int64.prototype = {
   toBuffer: function(rawBuffer) {
     if (rawBuffer && this.offset === 0) return this.buffer;
 
-    var out = new Buffer(8);
+    var out = Buffer.alloc(8);
     this.buffer.copy(out, 0, this.offset, this.offset + 8);
     return out;
   },
