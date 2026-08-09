@@ -24,6 +24,21 @@ npm install @zklogic/node-int64
 
 Requires Node.js >= 18. TypeScript typings are bundled — no `@types` package needed.
 
+## Quick start
+
+```js
+// CommonJS
+const Int64 = require('@zklogic/node-int64');
+
+// TypeScript / ESM interop
+import Int64 = require('@zklogic/node-int64');
+
+const x = new Int64(0x123456789);
+console.log(x.toString());       // '4886718345'
+console.log(x.toOctetString());  // '0000000123456789'
+console.log(x.toBuffer());       // <Buffer 00 00 00 01 23 45 67 89>
+```
+
 ## Why
 
 JavaScript Numbers are represented as [IEEE 754 double-precision floats](http://steve.hollasch.net/cgindex/coding/ieeefloat.html).
